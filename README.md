@@ -6,10 +6,14 @@ Feynman is a visualization library to explain a complex Python project in simple
     -- Richard Feynman
 
 ## What does it do?
-Feynman scripts look like unit tests. But, instead of testing the behavior of a class, a Feynman rule watches the state of a Python module, function, or class, and decides how to best draw a represenation of the runtime state. Feynman rules can be used to:
+Feynman scripts look like unit tests. But, instead of testing the behavior of a class, a Feynman rule watches the state of a Python module, function, or class, and decides how to best draw a represenation of the runtime state. 
+
+Feynman rules can be used to:
 - explain how a complex Python system works in very simple terms
 - validate the behavior and state of the system and highlight anomalies
 - create a dashboard with metrics 
+
+Other than a debugger, where a given anomaly has to be hunted down and discovered, Feynman facilitates the occurence of the [Aha! moment](https://en.wikipedia.org/wiki/Eureka_effect) by showing surprising things happening in the system. 
 
 ## Earlier work
 I have developed quite a few similar projects in my life. Here are some examples
