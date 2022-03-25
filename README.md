@@ -18,8 +18,6 @@ Other than a debugger, where a given anomaly has to be hunted down and discovere
 ## An Example
 
 Consider the code in [example.py](example.py):
-<details>
-<summary>
 
 ``` python
 import time
@@ -45,7 +43,6 @@ class Database(object):
     def write(self, key, value):
         time.sleep(0.005)
         self.data[key] = value
-</summary>
 
 def log(message):
     print(message)
