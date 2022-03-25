@@ -185,7 +185,7 @@ with feynman.Explain():
 
 The `example` module runs the same as before, but `explain.py` now draws the program state, while `example.py` is running, in an easy to understand diagram:
 
-![A Feynman animation of example.py showing how data is moved between two databases](Feynman.gif?raw=true "Title")
+![A Feynman animation of example.py showing how data is moved between two databases](feynman.gif?raw=true "Title")
 
 ## Earlier work
 Feynman is inspired by a number of similar projects developed by [Chris Laffra](https://chrislaffra.com). Here are some examples
