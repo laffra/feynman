@@ -1,4 +1,3 @@
-from random import random
 import time
 
 def open(name):
@@ -14,14 +13,14 @@ class Database(object):
         time.sleep(0.001)
         return self.data.get(key, None)
 
-    def delete(self, key):
+    def write(self, key, value):
         # writing is slow
         time.sleep(0.01)
-        del self.data[key]
-
-    def write(self, key, value):
-        time.sleep(0.005)
         self.data[key] = value
+
+    def delete(self, key):
+        time.sleep(0.005)
+        del self.data[key]
 
 
 def log(message):
