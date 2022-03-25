@@ -84,7 +84,7 @@ if __name__ == "__main__":
 
 
 This produces this output:
-``` python
+```
 % python3 explain.py
 step 1. Create two books
 step 2. Write values to book 1
@@ -95,7 +95,7 @@ step 6. Done
 ```
 
 Now, consider the following declarative script in [explain.py](explain.py):
-```
+``` python
 from collections import defaultdict
 import feynman;
 import time
