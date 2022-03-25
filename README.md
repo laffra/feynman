@@ -17,14 +17,9 @@ Other than a debugger, where a given anomaly has to be hunted down and discovere
 
 ## An Example
 
-Consider the code in [example.py](example.py):
+Consider the database defined in [example.py](example.py):
 
 ``` python
-import time
-
-def open(name):
-    return Database(name)
-
 class Database(object):
     def __init__(self, name):
         self.name = name
@@ -35,19 +30,21 @@ class Database(object):
         time.sleep(0.001)
         return self.data.get(key, None)
 
-    def delete(self, key):
+    def write(self, key, value):
         # writing is slow
         time.sleep(0.01)
-        del self.data[key]
-
-    def write(self, key, value):
-        time.sleep(0.005)
         self.data[key] = value
 
-def log(message):
-    print(message)
-    time.sleep(0.5)
+    def delete(self, key):
+        time.sleep(0.005)
+        del self.data[key]
+```
 
+This simplified API offers a simple key-value store to read and write values based on a key. 
+
+Here is an example that reads and writes 100 objects between two databases we call `book1` and `book2`:
+
+``` python
 def main():
     log("step 1. Create two books")
     book1 = open("book1")
@@ -75,17 +72,14 @@ def main():
         book1.delete(key)
 
     log("step 6. Done")
-
-if __name__ == "__main__":
-    main()
 ```
     
 </details>
 
 
-This produces this output:
+This example runs for a while, simulating the cost of DB accesses, and produces this output:
 ```
-% python3 explain.py
+% python3 example.py
 step 1. Create two books
 step 2. Write values to book 1
 step 3. Copy values from book 1 to 2
@@ -94,7 +88,8 @@ step 5. Clear book 1
 step 6. Done
 ```
 
-Now, consider the following declarative script in [explain.py](explain.py):
+Now, consider the following declarative script in [explain.py](explain.py).
+First, we introduce a few helper functions and import `feynman`:
 ``` python
 from collections import defaultdict
 import feynman;
@@ -124,17 +119,36 @@ def database(x, y, w, h, name, background="white", font="12px Arial"):
     feynman.oval(x, y + 3*h/5, w, h/5, background=background)
     feynman.rectangle(x + 2, y + 6*h/10, w, h/10, border="", background=background)
     feynman.text(x, y + 3*h/8, name, w, 24, "center", font)
+```
+
+Then we declare two visual elements that are rendered as part of the startup:
+``` python
 
 feynman.text(100, 100, "Reading and writing data between two databases", 900, font="32px Arial")
 feynman.text(100, 170, "", 900, font="24px Arial", color="blue", id="step")
+```
 
+The second text we add above has an id called `step`. Below, we show how that id is used 
+to update the text whenever the orginal code calls `log`.
+
+Next, we declare a couple of declarative rules. These are functions that have the 
+same shape as target functions in our original code. The decorator serves to tell
+`feynman` that whenever `example.Database.__init__` is called, the `createDatabase` function
+shown here should be called with the exact same arguments.
+
+``` python
 @feynman.on("example.Database.__init__")
 def createDatabase(self, name):
     database(get_x(name), 250, 90, 170, name, get_color(name), "24px Courier")
     feynman.text(get_x(name) + 100, 290, "read: 0", id=f"{name}-read")
     feynman.text(get_x(name) + 100, 310, "write: 0", id=f"{name}-write")
     feynman.text(get_x(name) + 100, 330, "size: 0", id=f"{name}-size")
+```
 
+We also define declarative visualization rules for `read`, `write`, and `delete`, so
+that we can show some statistices for each of the two databases we are visualizing:
+
+``` python
 @feynman.on("example.Database.read")
 def read(self, key):
     feynman.update(f"{self.name}-read", "text", f"read: {increment_count(self.name, 'read')}")
@@ -147,12 +161,20 @@ def write(self, key, value):
 @feynman.on("example.Database.delete")
 def delete(self, key):
     feynman.update(f"{self.name}-size", "text", f"size: {len(self.data)}")
+```
 
+The final rule is for `log`, as we mentioned above. It updates the title bar of our visualization
+to show the (blue) message to track progress in our program: 
+
+``` python
 @feynman.on("example.log")
 def log(message):
     feynman.update("step", "text", message)
+```
 
+To finish up the visualization script, we create a Feynman context and run `example.main`:
 
+``` python
 print("running example.py with Feynman.Explain...")
 when = time.time()
 with feynman.Explain():
@@ -161,7 +183,7 @@ with feynman.Explain():
     print("Ran for", time.time() - when, "seconds")
 ```
 
-The script runs the example as before, but also draws the program state, while it is running, in an easy to understand diagram:
+The `example` module runs the same as before, but `explain.py` now draws the program state, while `example.py` is running, in an easy to understand diagram:
 
 ![A Feynman animation of example.py showing how data is moved between two databases](Feynman.gif?raw=true "Title")
 
