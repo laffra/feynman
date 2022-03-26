@@ -1,5 +1,5 @@
 # What is Feynman?
-Feynman is a visualization library to explain a complex Python project in simple terms
+Feynman is a visualization library to explain complex Python code in simple terms.
 
 
 | <img src=images/example.gif width=800px> | <img src=images/dashboard.png width=500px> |
