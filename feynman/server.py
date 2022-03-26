@@ -20,7 +20,7 @@ async def send_event(websocket, path):
 
 def load_ui():
     dir = os.path.dirname(__file__)
-    path = "file://" + os.path.join(dir, "index.html")
+    path = "file://" + os.path.abspath(os.path.join(dir, "index.html"))
     webbrowser.open(url=path, autoraise=True)
 
 

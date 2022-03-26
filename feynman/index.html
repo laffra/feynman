@@ -45,6 +45,28 @@
                 padding: 2px 6px;
                 font-size: 20px;
             }
+            marker {
+                top: 25px;
+                width: 15px;
+                height: 15px;
+                border-radius: 50%;
+                border: 2px solid rgb(24, 136, 46);
+                overflow: hidden;
+                background: rgb(184, 235, 66);
+                color: rgb(184, 235, 66);
+                cursor: pointer;
+                z-index: 1000;
+            }
+            marker:hover {
+                top: 30px;
+                padding: 8px;
+                font: 14px black Arial;
+                width: auto;
+                background: lightyellow;
+                border: 2px solid black;
+                color: black;
+                border-radius: 0;
+            }
             .feynman-oval {
                 border-radius:50%;
                 overflow:hidden;
@@ -58,7 +80,7 @@
             <div id="timeline"></div>
             <div id="timestamp"></div>
         </div>
-        <div class="log"></div>
+        <div class="nolog"></div>
         <script>
             const MILLISECONDS = 1000;
             const REPLAY_FLUSH_INTERVAL = 0.01;
@@ -75,9 +97,14 @@
                         .appendTo($(".canvas"));
             }
             function update(node, key, value) {
-                if (key.match(/^(id|when|kind)$/)) return;
-                if (node.prop("tagName") == "LINE") {
-                    self.updateLine(node, key, value);
+                if (key.match(/^(id|kind)$/)) return;
+                switch (node.prop("tagName")) {
+                    case "LINE":
+                        self.updateLine(node, key, value);
+                        break;
+                    case "MARKER":
+                        self.updateMarker(node, key, value);
+                        break;
                 }
                 try {
                     node.css(key, value);
@@ -95,6 +122,16 @@
                         max: (end - start) * MILLISECONDS,
                         value: 0,
                     });
+            }
+            function updateMarker(node, name, value) {
+                if (name == "when") {
+                    const width = $("#timeline").width();
+                    const max = $("#timeline").slider("option", "max") / 1000;
+                    const when = value - start;
+                    node.css({
+                        left: when * width / max,
+                    })
+                }
             }
             function updateLine(node, name, value) {
                 node.attr(name, value);
@@ -117,19 +154,21 @@
                     WebkitTransform: "rotate(" + angle + "rad)",
                 })
             }
-            function replayEvent(index) {
+            function replayEvent(index, stopWhen) {
                 if (index >= events.length) return;
                 var whenStart = events[index].when;
                 for (;index < events.length; index++) {
-                    if (events[index].when - whenStart > REPLAY_FLUSH_INTERVAL) {
-                        const ms = (events[index].when - whenStart) * MILLISECONDS;
-                        setTimeout(() => replayEvent(index), ms);
+                    const when = events[index].when;
+                    if (stopWhen && when >= stopWhen) return;
+                    if (!stopWhen && when - whenStart > REPLAY_FLUSH_INTERVAL) {
+                        const ms = (when - whenStart) * MILLISECONDS;
+                        setTimeout(() => replayEvent(index, stopWhen), ms);
                         break;
                     }
                     handleEvent(events[index]);
                 }
             }
-            function handleEvent(event) {
+            function updateTimeline(event) {
                 start = start || event.when;
                 end = Math.max(end, event.when);
                 when = event.when - start
@@ -139,8 +178,13 @@
                         max: (end - start) * MILLISECONDS + (end == event.when ? MILLISECONDS : 0),
                         value: when * MILLISECONDS
                     });
+                $("marker").each((n, element) => {
+                    updateMarker($(element), "when", element.when);
+                });
                 $("#timestamp")
-                    .text("@" + when.toFixed(1) + "s")
+                    .text("@" + when.toFixed(1) + "s");
+            }
+            function handleEvent(event) {
                 switch (event.kind) {
                     case "info":
                         if (!event.item_name.startsWith("importlib._bootstrap"))
@@ -157,8 +201,15 @@
                             update(node, key, event[key])
                         }
                 }
+                updateTimeline(event);
             };
-            $("#timeline").slider();
+            $("#timeline").slider({
+                stop: function( event, ui ) {
+                    const when = ui.value / 1000;
+                    console.log("change", when)
+                    replayEvent(0, start + when);
+                },
+            });
             function run() {
                 $(".canvas").css({ opacity: 1 });
                 clearCanvas();

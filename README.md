@@ -2,7 +2,8 @@
 Feynman is a visualization library to explain a complex Python project in simple terms
 
 ## Why the name?
-    "If you cannot explain something in simple terms, you don't understand it." 
+    "If you cannot explain something in simple
+    terms, you don't understand it." 
     -- Richard Feynman
 
 ## What does it do?
@@ -15,9 +16,9 @@ Feynman rules can be used to:
 
 Other than a debugger, where a given anomaly has to be hunted down and discovered, Feynman facilitates the occurence of the [Aha! moment](https://en.wikipedia.org/wiki/Eureka_effect) by showing surprising things happening in the system. 
 
-## An Example
+## An Example - Visualizing Database Access
 
-Consider the database defined in [example.py](example.py):
+Consider the database defined in [test/db.py](test/db.py):
 
 ``` python
 class Database(object):
@@ -79,7 +80,7 @@ def main():
 
 This example runs for a while, simulating the cost of DB accesses, and produces this output:
 ```
-% python3 example.py
+% python3 test/db.py
 step 1. Create two books
 step 2. Write values to book 1
 step 3. Copy values from book 1 to 2
@@ -133,11 +134,11 @@ to update the text whenever the orginal code calls `log`.
 
 Next, we declare a couple of declarative rules. These are functions that have the 
 same shape as target functions in our original code. The decorator serves to tell
-`feynman` that whenever `example.Database.__init__` is called, the `createDatabase` function
+`feynman` that whenever `db.Database.__init__` is called, the `createDatabase` function
 shown here should be called with the exact same arguments.
 
 ``` python
-@feynman.on("example.Database.__init__")
+@feynman.on("db.Database.__init__")
 def createDatabase(self, name):
     database(get_x(name), 250, 90, 170, name, get_color(name), "24px Courier")
     feynman.text(get_x(name) + 100, 290, "read: 0", id=f"{name}-read")
@@ -149,16 +150,16 @@ We also define declarative visualization rules for `read`, `write`, and `delete`
 that we can show some statistices for each of the two databases we are visualizing:
 
 ``` python
-@feynman.on("example.Database.read")
+@feynman.on("db.Database.read")
 def read(self, key):
     feynman.update(f"{self.name}-read", "text", f"read: {increment_count(self.name, 'read')}")
 
-@feynman.on("example.Database.write")
+@feynman.on("db.Database.write")
 def write(self, key, value):
     feynman.update(f"{self.name}-write", "text", f"write: {increment_count(self.name, 'write')}")
     feynman.update(f"{self.name}-size", "text", f"size: {len(self.data)}")
 
-@feynman.on("example.Database.delete")
+@feynman.on("db.Database.delete")
 def delete(self, key):
     feynman.update(f"{self.name}-size", "text", f"size: {len(self.data)}")
 ```
@@ -167,25 +168,70 @@ The final rule is for `log`, as we mentioned above. It updates the title bar of 
 to show the (blue) message to track progress in our program: 
 
 ``` python
-@feynman.on("example.log")
+@feynman.on("db.log")
 def log(message):
     feynman.update("step", "text", message)
 ```
 
-To finish up the visualization script, we create a Feynman context and run `example.main`:
+To finish up the visualization script, we create a Feynman context and run `db.main`:
 
 ``` python
-print("running example.py with Feynman.Explain...")
+print("running test/db.py with Feynman.Explain...")
 when = time.time()
 with feynman.Explain():
-    import example
-    example.main()
+    import db
+    db.main()
     print("Ran for", time.time() - when, "seconds")
 ```
 
-The `example` module runs the same as before, but `explain.py` now draws the program state, while `example.py` is running, in an easy to understand diagram:
+The `db` module runs the same as before, but `explain.py` now draws the program state, while `test/db.py` is running, in an easy to understand diagram:
 
-![A Feynman animation of example.py showing how data is moved between two databases](example.gif?raw=true "Title")
+![A Feynman animation of test/db.py showing how data is moved between two databases](images/example.gif?raw=true "Title")
+
+## An Example - Creating a Metrics Dashboard
+
+The code in [test/ping.py](test/ping.py) checks the health of a number of websites from around the world. It also tries to guess 
+what location the server is based in. It then generates a table
+with metrics, resembling this:
+
+```
+Locations:
+--------------------------------------------------------------------------------
+localhost            0.0s  Netherlands
+rtlz.nl              0.2s  Netherlands
+nos.nl               0.1s  United States
+reddit.com           1.8s  United States
+chrislaffra.com      0.5s  United States
+microsoft.com        0.8s  United States
+google.com           0.2s  United States
+apple.com            0.2s  United States
+mozilla.org          0.9s  United States
+wordpress.org        0.8s  United States
+en.wikipedia.org     0.2s  Netherlands
+linkedin.com         0.9s  United States
+vimeo.com            0.3s  United States
+youtu.be             0.9s  United States
+github.com           0.2s  United States
+cnn.com              0.3s  United States
+paypal.com           0.8s  United States
+cnet.com             0.6s  United States
+dropbox.com          1.0s  United States
+wikimedia.org        0.1s  Netherlands
+web.whatsapp.com     0.1s  Ireland
+happymac.app         0.8s  United States
+twitch.tv            0.2s  United States
+twitter.com          0.6s  United States
+--------------------------------------------------------------------------------
+```
+
+Of course, localhost connections are really fast. Some sites take
+a lot longer than others. However, from the table it is not easy to detect the anomalies in a quick scan. 
+
+However, the metrics can easily be converted to color ranges and shown in a dashboard style, as shown in [test/explain-ping.py](test/explain-ping.py):
+
+![A Feynman animation of test/ping.py showing ping times](images/dashboard.png)
+
+
 
 ## Earlier work
 Feynman is inspired by a number of similar projects developed by [Chris Laffra](https://chrislaffra.com). Here are some examples
