@@ -227,7 +227,7 @@ twitter.com          0.6s  United States
 Of course, localhost connections are really fast. Some sites take
 a lot longer than others. However, from the table it is not easy to detect the anomalies in a quick scan. 
 
-However, the metrics can easily be converted to color ranges and shown in a dashboard style, as shown in [test/explain-ping.py](test/explain-ping.py):
+However, the metrics can easily be converted to color ranges and shown in a dashboard style, as shown in [test/explain-ping.py](test/explain-ping.py). The outliers stick out immediately:
 
 ![A Feynman animation of test/ping.py showing ping times](images/dashboard.png)
 
