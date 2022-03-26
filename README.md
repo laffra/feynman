@@ -1,9 +1,14 @@
 # What is Feynman?
 Feynman is a visualization library to explain a complex Python project in simple terms
 
+
+| <img src=images/example.gif width=800px> | <img src=images/dashboard.png width=500px> |
+| :---: | :---: |
+| A Feynman animation showing database access | A dashboard highlighting anomalous metrics |
+
+
 ## Why the name?
-    "If you cannot explain something in simple
-    terms, you don't understand it." 
+    "If you cannot explain something in simple terms, you don't understand it." 
     -- Richard Feynman
 
 ## What does it do?
@@ -186,7 +191,8 @@ with feynman.Explain():
 
 The `db` module runs the same as before, but `explain.py` now draws the program state, while `test/db.py` is running, in an easy to understand diagram:
 
-![A Feynman animation of test/db.py showing how data is moved between two databases](images/example.gif?raw=true "Title")
+| ![A Feynman animation of test/db.py showing how data is moved between two databases](images/example.gif?raw=true "Title") |
+| --- |
 
 ## An Example - Creating a Metrics Dashboard
 
