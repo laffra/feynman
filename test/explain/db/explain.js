@@ -34,11 +34,11 @@ window.addDatabase = name => {
         .css('width', 270 * databases.length);
     setInterval(() => {
         const bar = $("#" + name + "-statusbar");
-        bar.css("width", Math.max(0, bar.width() - 5));
+        bar.css("width", Math.max(0, bar.width() - 7));
     }, 100)
 }
 
 window.busy = name => {
     const bar = $("#" + name + "-statusbar");
-    bar.css("width", Math.min(80, bar.width() + 5));
+    bar.css("width", Math.min(80, bar.width() + 7));
 }

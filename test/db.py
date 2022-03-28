@@ -10,22 +10,21 @@ class Database(object):
 
     def read(self, key):
         # reading is fast
-        time.sleep(0.001)
+        time.sleep(0.007)
         return self.data.get(key, None)
 
     def write(self, key, value):
         # writing is slow
-        time.sleep(0.01)
+        time.sleep(0.07)
         self.data[key] = value
 
     def delete(self, key):
-        time.sleep(0.005)
+        time.sleep(0.085)
         del self.data[key]
 
 
 def log(message):
     print(message)
-    time.sleep(1)
 
 def main():
     when = time.time()
@@ -40,15 +39,21 @@ def main():
     for key, value in zip(keys, values):
         book1.write(key, value)
 
+    time.sleep(1.5)
+
     log("step 3. Copy values from book 1 to 2")
     for key in keys:
         value = book1.read(key)
         book2.write(key, value)
 
+    time.sleep(1.5)
+
     log("step 4. Read values from book 2")
     for n in range(3):
         for key in keys:
             value = book2.read(key)
+
+    time.sleep(1.5)
 
     log("step 5. Clear book 1")
     for key in keys:
