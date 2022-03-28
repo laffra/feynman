@@ -16,7 +16,7 @@ Feynman rules can be used to:
 
 Other than a debugger, where a given anomaly has to be hunted down and discovered, Feynman facilitates the occurence of the [Aha! moment](https://en.wikipedia.org/wiki/Eureka_effect) by showing surprising things happening in the system. 
 
-## An Example - Visualizing Database Access
+## An Example - Database Access
 
 Consider the database defined in [test/db.py](test/db.py):
 
@@ -75,9 +75,6 @@ def main():
     log("step 6. Done")
 ```
     
-</details>
-
-
 This example runs for a while, simulating the cost of DB accesses, and produces this output:
 ```
 % python3 test/db.py
@@ -89,91 +86,58 @@ step 5. Clear book 1
 step 6. Done
 ```
 
-Now, consider the following declarative script in [explain.py](explain.py).
-First, we introduce a few helper functions and import `feynman`:
-``` python
-from collections import defaultdict
-import feynman;
-import time
+## Visualizing Database Access
 
-databases = {}
-colors = [ "pink", "lightyellow", "lightgreen", "lightblue", "white" ]
-counts = defaultdict(int)
+To visualize the database read, write, and delete operations for the two databases
+we create abovem we introduce the script in [explain/db/explain.py](explain/db/explain.py).
 
-def get_x(name):
-    if not name in databases:
-        databases[name] = len(databases)
-    index = databases[name]
-    return 100 + index * 303
-
-def get_color(name):
-    return colors[ get_x(name) % len(colors) ]
-
-def increment_count(name, operation):
-    key = f"{name}-{operation}"
-    counts[key] += 1
-    return counts[key]
-
-def database(x, y, w, h, name, background="white", font="12px Arial"):
-    feynman.rectangle(x, y + h/10, w, 6*h/10, background=background)
-    feynman.oval(x, y, w, h/5, background=background)
-    feynman.oval(x, y + 3*h/5, w, h/5, background=background)
-    feynman.rectangle(x + 2, y + 6*h/10, w, h/10, border="", background=background)
-    feynman.text(x, y + 3*h/8, name, w, 24, "center", font)
-```
-
-Then we declare two visual elements that are rendered as part of the startup:
-``` python
-
-feynman.text(100, 100, "Reading and writing data between two databases", 900, font="32px Arial")
-feynman.text(100, 170, "", 900, font="24px Arial", color="blue", id="step")
-```
-
-The second text we add above has an id called `step`. Below, we show how that id is used 
-to update the text whenever the orginal code calls `log`.
-
-Next, we declare a couple of declarative rules. These are functions that have the 
-same shape as target functions in our original code. The decorator serves to tell
-`feynman` that whenever `db.Database.__init__` is called, the `createDatabase` function
-shown here should be called with the exact same arguments.
+Among other things, we declare a Feynman rule for detecting when new instances
+of the `db.Database` class are instantiated. Those instances are then rendered
+using a helper function called `database` and three metrics shown to the right of the 
+database icon:
 
 ``` python
 @feynman.on("db.Database.__init__")
 def createDatabase(self, name):
-    database(get_x(name), 250, 90, 170, name, get_color(name), "24px Courier")
-    feynman.text(get_x(name) + 100, 290, "read: 0", id=f"{name}-read")
-    feynman.text(get_x(name) + 100, 310, "write: 0", id=f"{name}-write")
-    feynman.text(get_x(name) + 100, 330, "size: 0", id=f"{name}-size")
+    database(name, 0, 20, 100, 170)
+    feynman.text("read: 0", 120, 30, id=f"{name}-read", group=name)
+    feynman.text("write: 0", 120, 50, id=f"{name}-write", group=name)
+    feynman.text("size: 0", 120, 70, id=f"{name}-size", group=name)
+```
+
+The helper function introduces a new group of drawing primitives. The group itself
+is added to another group to render all databases close to each other. Groups can
+be moved by the user, to customize the resulting drawing.
+
+``` python
+def database(name, x, y, w, h):
+    feynman.group(name, x, y, group="databases", children=[
+        feynman.rectangle(0, h/10, w, 6*h/10),
+        feynman.oval(0, 0, w, h/5),
+        feynman.oval(0, 3*h/5, w, h/5),
+        feynman.rectangle(2, 6*h/10, w, h/10, border=""),
+        feynman.text(name, 2, 3*h/8, w, 24, "center"),
+    ])
+    feynman.run(f"addDatabase('{name}')")
 ```
 
 We also define declarative visualization rules for `read`, `write`, and `delete`, so
-that we can show some statistices for each of the two databases we are visualizing:
+that we can show some statistices for each of the two databases we are visualizing.
+Below is the rule for `read`. It uses `feynman.update`, that uses three arguments:
+`id`, `name`, and `value`. It finds the DOM node in the drawing the ID and updates
+its property or CSS attribute with the provided value.
 
 ``` python
 @feynman.on("db.Database.read")
 def read(self, key):
     feynman.update(f"{self.name}-read", "text", f"read: {increment_count(self.name, 'read')}")
-
-@feynman.on("db.Database.write")
-def write(self, key, value):
-    feynman.update(f"{self.name}-write", "text", f"write: {increment_count(self.name, 'write')}")
-    feynman.update(f"{self.name}-size", "text", f"size: {len(self.data)}")
-
-@feynman.on("db.Database.delete")
-def delete(self, key):
-    feynman.update(f"{self.name}-size", "text", f"size: {len(self.data)}")
 ```
 
-The final rule is for `log`, as we mentioned above. It updates the title bar of our visualization
-to show the (blue) message to track progress in our program: 
+When loading the visualization script, Feynman will load three adjacent files, 
+`explain.html`, `explain.css`, and `explain.js`. These three will be merged into
+the drawing at load time.
 
-``` python
-@feynman.on("db.log")
-def log(message):
-    feynman.update("step", "text", message)
-```
-
-To finish up the visualization script, we create a Feynman context and run `db.main`:
+Finally, we run the original example by calling its `main`:
 
 ``` python
 print("running test/db.py with Feynman.Explain...")

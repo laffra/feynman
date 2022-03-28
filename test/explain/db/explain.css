@@ -1,0 +1,38 @@
+.title {
+    position: absolute;
+    width: 900px;
+    font: 32px Arial;
+}
+
+.sub-title {
+    position: absolute;
+    font: 24px Arial;
+    color: blue;
+}
+
+.db-group {
+    position: absolute;
+    border: 2px dotted grey;
+    cursor: pointer;
+    min-width: 50px;
+    min-height: 50px;
+}
+
+.db-status {
+    position: absolute;
+    border: 1px solid darkgrey;
+    left: 10px;
+    top: 90px;
+    width: 80px;
+    height: 24px;
+    background-color: darkgrey;
+}
+
+.db-statusbar {
+    display: block;
+    background-color: orange;
+    margin: 2px;
+    width: 4px;
+    height: 20px;
+}
+

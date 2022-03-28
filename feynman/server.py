@@ -11,6 +11,7 @@ events = queue.Queue()
 
 def send(event):
     events.put(event)
+    return event
 
 async def send_event(websocket, path):
     while True:
@@ -20,7 +21,7 @@ async def send_event(websocket, path):
 
 def load_ui():
     dir = os.path.dirname(__file__)
-    path = "file://" + os.path.abspath(os.path.join(dir, "index.html"))
+    path = "file://" + os.path.abspath(os.path.join(dir, os.path.join("ui", "index.html")))
     webbrowser.open(url=path, autoraise=True)
 
 

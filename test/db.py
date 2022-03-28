@@ -25,6 +25,7 @@ class Database(object):
 
 def log(message):
     print(message)
+    time.sleep(1)
 
 def main():
     when = time.time()
