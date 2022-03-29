@@ -10,16 +10,16 @@ class Database(object):
 
     def read(self, key):
         # reading is fast
-        time.sleep(0.007)
+        time.sleep(0.000007)
         return self.data.get(key, None)
 
     def write(self, key, value):
         # writing is slow
-        time.sleep(0.07)
+        time.sleep(0.00007)
         self.data[key] = value
 
     def delete(self, key):
-        time.sleep(0.085)
+        time.sleep(0.000085)
         del self.data[key]
 
 
@@ -31,27 +31,28 @@ def main():
     log("step 1. Create two books")
     book1 = open("book1")
     book2 = open("book2")
-    count = 100
+    count = 10000
     keys = [f"key-{n}" for n in range(count)]
     values = [f"value-{n}" for n in range(count)]
 
-    log("step 2. Write values to book 1")
+    time.sleep(3)
+
+    log(f"step 2. Write {count} values to book 1")
     for key, value in zip(keys, values):
         book1.write(key, value)
 
     time.sleep(1.5)
 
-    log("step 3. Copy values from book 1 to 2")
+    log(f"step 3. Copy {count} values from book 1 to 2")
     for key in keys:
         value = book1.read(key)
         book2.write(key, value)
 
     time.sleep(1.5)
 
-    log("step 4. Read values from book 2")
-    for n in range(3):
-        for key in keys:
-            value = book2.read(key)
+    log(f"step 4. Read {count} values from book 2")
+    for key in keys:
+        value = book2.read(key)
 
     time.sleep(1.5)
 

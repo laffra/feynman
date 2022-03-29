@@ -2,6 +2,7 @@ import sys
 sys.path.extend(["../..", "../../.."]) # this module path is not needed when using pip install
 import feynman
 from collections import defaultdict
+import time
 
 counts = defaultdict(int)
 
