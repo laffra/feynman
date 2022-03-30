@@ -18,9 +18,11 @@ file2mod = re.compile(r".*python[23].[0-9]*[/\\](.*)")
 path2mod = re.compile(r"[/\\]")
 module = re.compile(r"<module>")
 last_flush = time.time()
-updates = { }
+updates = {}
 config = {}
 config_has_regex = False
+trace_targets = []
+trace_targets_shown = set()
 event_count = 0
 return_value = None
 function_name = ""
@@ -106,7 +108,7 @@ def update(id, name, value):
             
 def compile_config_regexes():
     for name in list(config.keys()):
-        regex = re.compile(function_name)
+        regex = re.compile(name)
         if regex != name:
             func = config[name]
             config[regex] = func
@@ -121,13 +123,14 @@ def on(function_name):
         return func
     return inner
 
-def get_handler(target):
+def trace(moduleOrClass):
+    trace_targets.append(f"{moduleOrClass}.")
+
+def get_handlers(target):
     if config_has_regex:
-        print("REGEX MATCH", target)
-        for name in config.keys():
-            if re.match(name, target):
-                print(" - FOUND", name)
-                return config[name]
+        for pattern, function in config.items():
+            if re.match(pattern, target):
+                yield function
     else:
         return config.get(target)
 
@@ -145,13 +148,20 @@ class Explain(object):
         self.code_cache[code] = args
         return args
 
-    def explain(self, name, frame, return_value, args):
-        handler = get_handler(name)
-        if handler:
-            feynman.return_value = return_value
-            feynman.function_name = name
+    def explain(self, function_name, frame, return_value, args):
+        feynman.return_value = return_value
+        feynman.function_name = function_name
+        for handler in get_handlers(function_name):
             handler(*[frame.f_locals[arg] for arg in args])
-        
+        if function_name not in trace_targets_shown:
+            for target in trace_targets:
+                if function_name.startswith(target):
+                    print(f"@feynman.on(\"{function_name}\")")
+                    print(f"def {function_name[len(target):]}({','.join(args)}):")
+                    print(f"   pass")
+                    print()
+                    trace_targets_shown.add(function_name)
+            
     def handle_return(self, frame, return_value):
         module_name = frame.f_globals["__name__"]
         if module_name == "feynman": return

@@ -1,7 +1,10 @@
+import json
 import sys
 sys.path.extend(["../..", "../../.."]) # this module path is not needed when using pip install
 import feynman;
 from collections import defaultdict
+import re
+
 
 domains = {}
 ips = {}
@@ -48,12 +51,7 @@ def getLocation(ip):
 def thisNameReallyDoesNotMatter(domain):
     duration[domain] = feynman.return_value
 
-import re
-
-# @feynman.on(re.compile(r"ping\..*"))
-# def watchAllPingCalls(*args, **kwargs):
-    # print(f"CALL ping.{feynman.function_name}")
-    
+feynman.trace("ping")
 
 print("running example.py with Feynman.Explain...")
 with feynman.Explain():

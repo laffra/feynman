@@ -191,6 +191,34 @@ The JavaScript function we call in this manner uses jQuery, but that is not
 required. However, JQuery makes it easy to construct dynamic visualizations
 such as Feynman creates.
 
+### Finding out what predicates to use
+
+To discover the names of the fully qualified functions or methods of interest,
+run the `feynman.trace` utility. The `ping` example above uses it as follows:
+
+``` python
+feynman.trace("ping")
+```
+
+This results in all calls for functions declared in the `ping` module to be
+traced and the corresponding predicate to be shown when it is discovered the first time:
+
+``` python
+@feynman.on("ping.callService")
+def callService(url):
+   pass
+
+@feynman.on("ping.getDetails")
+def getDetails(location):
+   pass
+
+@feynman.on("ping.getLocation")
+def getLocation(ip):
+   pass
+```
+
+You can then simply cut and paste them into your `explain.py` and turn off the trace again.
+
 ### Combining it all
 
 Finally, we run the original example by calling its `main`:
