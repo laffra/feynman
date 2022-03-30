@@ -132,7 +132,7 @@ def get_handlers(target):
             if re.match(pattern, target):
                 yield function
     else:
-        return config.get(target)
+        yield config.get(target)
 
 
 class Explain(object):
@@ -152,7 +152,8 @@ class Explain(object):
         feynman.return_value = return_value
         feynman.function_name = function_name
         for handler in get_handlers(function_name):
-            handler(*[frame.f_locals[arg] for arg in args])
+            if handler:
+                handler(*[frame.f_locals[arg] for arg in args])
         if function_name not in trace_targets_shown:
             for target in trace_targets:
                 if function_name.startswith(target):
