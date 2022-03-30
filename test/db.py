@@ -35,7 +35,7 @@ def main():
     keys = [f"key-{n}" for n in range(count)]
     values = [f"value-{n}" for n in range(count)]
 
-    time.sleep(3)
+    time.sleep(1)
 
     log(f"step 2. Write {count} values to book 1")
     for key, value in zip(keys, values):
