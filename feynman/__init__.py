@@ -20,8 +20,10 @@ module = re.compile(r"<module>")
 last_flush = time.time()
 updates = { }
 config = {}
+config_has_regex = False
 event_count = 0
 return_value = None
+function_name = ""
 
 UPDATE_FLUSH_INTERVAL = 0.05
 
@@ -101,25 +103,40 @@ def update(id, name, value):
     else:
         updates[key] = locals()
     flush_updates()
+            
+def compile_config_regexes():
+    for name in list(config.keys()):
+        regex = re.compile(function_name)
+        if regex != name:
+            func = config[name]
+            config[regex] = func
+            del config[name]
 
 def on(function_name):
     def inner(func):
-        config[function_name] = func
+        config[re.compile(function_name) if config_has_regex else function_name] = func
+        if re.compile(function_name) == function_name:
+            feynman.config_has_regex = True
+            compile_config_regexes()
         return func
     return inner
+
+def get_handler(target):
+    if config_has_regex:
+        print("REGEX MATCH", target)
+        for name in config.keys():
+            if re.match(name, target):
+                print(" - FOUND", name)
+                return config[name]
+    else:
+        return config.get(target)
+
 
 class Explain(object):
     def __init__(self):
         self.info_cache = set()
         self.modules_to_trace = set()
         self.code_cache = {}
-
-    def send_info(self, item_type, item_name):
-        if not self.enabled or item_name in self.info_cache:
-            return
-        self.info_cache.add(item_name)
-        # feynman.server.send(create_event("info", locals()))
-        return item_name
     
     def getargs(self, code):
         if code in self.code_cache:
@@ -129,24 +146,22 @@ class Explain(object):
         return args
 
     def explain(self, name, frame, return_value, args):
-        if name in config:
+        handler = get_handler(name)
+        if handler:
             feynman.return_value = return_value
-            config[name](*[frame.f_locals[arg] for arg in args])
+            feynman.function_name = name
+            handler(*[frame.f_locals[arg] for arg in args])
         
     def handle_return(self, frame, return_value):
         module_name = frame.f_globals["__name__"]
         if module_name == "feynman": return
         function_name = frame.f_code.co_name
-        self.send_info("module", module_name)
         args = self.getargs(frame.f_code)
         try:
             class_name = "%s.%s" % (module_name, frame.f_locals['self'].__class__.__name__)
-            self.send_info("class", class_name)
             name = "%s.%s" % (class_name, function_name)
-            self.send_info("method", "%s %s" % (name, " ".join(args)))
         except Exception as e:
             name = "%s.%s" % (module_name, function_name)
-            self.send_info("function", "%s %s" % (name, " ".join(args)))
         self.explain(name, frame, return_value, args)
 
     def handle_event(self, frame, event, arg):

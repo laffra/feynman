@@ -48,6 +48,13 @@ def getLocation(ip):
 def thisNameReallyDoesNotMatter(domain):
     duration[domain] = feynman.return_value
 
+import re
+
+# @feynman.on(re.compile(r"ping\..*"))
+# def watchAllPingCalls(*args, **kwargs):
+    # print(f"CALL ping.{feynman.function_name}")
+    
+
 print("running example.py with Feynman.Explain...")
 with feynman.Explain():
     import ping

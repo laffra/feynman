@@ -1,3 +1,5 @@
+/* Feynman automatically loads this CSS at load time. */
+
 .title {
     position: absolute;
     width: 900px;
@@ -13,7 +15,7 @@
 .db-group {
     position: absolute;
     border: 2px dotted grey;
-    cursor: pointer;
+    cursor: grab;
     min-width: 50px;
     min-height: 50px;
 }

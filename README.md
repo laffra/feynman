@@ -94,12 +94,27 @@ step 6. Done
 ## Visualizing Database Access
 
 To visualize the database read, write, and delete operations for the two databases
-we create abovem we introduce the script in [explain/db/explain.py](explain/db/explain.py).
+we create above we introduce the script in [test/explain/db/explain.py](db/explain.py).
 
 Among other things, we declare a Feynman rule for detecting when new instances
-of the `db.Database` class are instantiated. Those instances are then rendered
-using a helper function called `database` and three metrics shown to the right of the 
-database icon:
+of the `db.Database` class are instantiated. The predicate is defined using
+a Python decorator that acts as an IFTT rule. The format is:
+
+``` python
+@feynman.on("fully.qualified.function.or.method.name")
+def meaningfulFunctionName(same, arguments, asoriginal):
+```
+
+The function name in the predicate can be literal, containing
+the full modules path, followed by a function name or a method 
+name. Alternatively, the predicate may be a regular expression.
+
+### Using a predicate for object creation
+
+In this case, the predicate condition covers any invocation of the `db.Database` constructor. In other
+words, any time a new instance of that class is created, we want to do something special.
+In this case, we create a visual representation of the database and show
+three metrics to track operations happening on the instance.
 
 ``` python
 @feynman.on("db.Database.__init__")
@@ -109,6 +124,12 @@ def createDatabase(self, name):
     feynman.text("write: 0", 120, 50, id=f"{name}-write", group=name)
     feynman.text("size: 0", 120, 70, id=f"{name}-size", group=name)
 ```
+
+The instances are rendered using a helper function called `database`. That
+helper method can come from anywhere and can be imported from another
+module, of course. For our example, it is declared in the same `explain` module.
+
+### Using a helper functions
 
 The helper function introduces a new group of drawing primitives. The group itself
 is added to another group to render all databases close to each other. Groups can
@@ -126,21 +147,51 @@ def database(name, x, y, w, h):
     feynman.run(f"addDatabase('{name}')")
 ```
 
-We also define declarative visualization rules for `read`, `write`, and `delete`, so
+This rule takes care of the static aspects of the database. We will see it when
+it gets created. But, we are really interested in its dynamic behavior. How
+often do we read and write to it? In other words, can we render its state
+to help us understand how it works?
+
+### Showing application state
+
+To show the dynamic behavior of the database, we define declarative visualization 
+rules for `read`, `write`, and `delete`, so
 that we can show some statistices for each of the two databases we are visualizing.
 Below is the rule for `read`. It uses `feynman.update`, that uses three arguments:
-`id`, `name`, and `value`. It finds the DOM node in the drawing the ID and updates
-its property or CSS attribute with the provided value.
+`id`, `name`, and `value`. It finds the correct DOM node in the drawing.
+Then it updates its property or CSS attribute with the provided value.
 
 ``` python
 @feynman.on("db.Database.read")
 def read(self, key):
-    feynman.update(f"{self.name}-read", "text", f"read: {increment_count(self.name, 'read')}")
+    id = f"{self.name}-read"
+    name = "text"
+    value = f"read: {increment_count(self.name, 'read')}")
+    feynman.update(id, name, value)
 ```
+
+### Declaring custom HTML and JavaScript
 
 When loading the visualization script, Feynman will load three adjacent files, 
 `explain.html`, `explain.css`, and `explain.js`. These three will be merged into
 the drawing at load time.
+
+In our database example, the `explain.js` is interesting as it introduces a
+temperature gauge that animates the state of the database. It shows how
+active the database is. 
+
+Functions declared in JavaScript can be called from Feynman scripts
+using the `run` function:
+
+``` python
+    feynman.run(f"busy('{self.name}')")
+```
+
+The JavaScript function we call in this manner uses jQuery, but that is not
+required. However, JQuery makes it easy to construct dynamic visualizations
+such as Feynman creates.
+
+### Combining it all
 
 Finally, we run the original example by calling its `main`:
 
@@ -153,7 +204,8 @@ with feynman.Explain():
     print("Ran for", time.time() - when, "seconds")
 ```
 
-The `db` module runs the same as before, but `explain.py` now draws the program state, while `test/db.py` is running, in an easy to understand diagram:
+The end result is that the `db` module runs the same as before. 
+However, `explain.py` now draws the program state, while `test/db.py` is running, in an easy to understand diagram:
 
 | ![A Feynman animation of test/db.py showing how data is moved between two databases](images/example.gif?raw=true "Title") |
 | --- |
@@ -197,13 +249,29 @@ twitter.com          0.6s  United States
 Of course, localhost connections are really fast. Some sites take
 a lot longer than others. However, from the table it is not easy to detect the anomalies in a quick scan. 
 
-However, the metrics can easily be converted to color ranges and shown in a dashboard style, as shown in [test/explain-ping.py](test/explain-ping.py). The outliers stick out immediately:
+However, the metrics can easily be converted to color ranges and shown in a dashboard style, as shown in [test/explain/ping/explain.py](ping/explain.py). The outliers stick out immediately:
 
-![A Feynman animation of test/ping.py showing ping times](images/dashboard.png)
+![A Feynman animation of ping.py showing ping times](images/dashboard.png)
 
+## Implementation
 
+Feynman is a profiler. It uses `sys.setprofile` to detect the
+enter and leave of **every** function call in your Python
+program. This makes Feynman about 4X slower than the regular execution.
+
+Feynman worries about its own overhead a lot. The predicates
+are evaluated in the same process as the original program.
+Feynman opens a websocket server port. It sends
+visualization constructs and state updates to that socket.
+State updates are buffered and sent at regular interval to 
+avoid clogging the socket.
+
+The ui is an HTML page that runs in a browser window. It opens
+a socket to the locally running process and starts handling
+visualization requests.
 
 ## Earlier work
+
 Feynman is inspired by a number of similar projects developed by [Chris Laffra](https://chrislaffra.com). Here are some examples
 - [Hotwire](https://www.usenix.org/conference/usenix-6th-c-technical-conference/presentation/hotwire-visual-debugger-c), the closest to project Feynman, to visualize C++ and Smalltalk programs, 1993
 - [XRay](https://www.slideshare.net/chrislaffra/eclipse-visualization-and-performance-monitoring), hardwired visualization for Java programs, such as Eclipse, 2003

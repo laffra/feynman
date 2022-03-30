@@ -40,5 +40,5 @@ window.addDatabase = name => {
 
 window.busy = name => {
     const bar = $("#" + name + "-statusbar");
-    bar.css("width", Math.min(80, bar.width() + 20));
+    bar.css("width", Math.min(76, bar.width() + 20));
 }
