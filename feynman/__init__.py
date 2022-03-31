@@ -85,7 +85,7 @@ def group(name, left=0, top=0, width="auto", height="auto", border="none", backg
     feynman.server.send(create_event("group", locals()))
     for child in children:
         feynman.run(f"""$('#{child["id"]}').css("position","auto").appendTo($('[name="{name}"]'))""")
-    feynman.run(f"$('#{id}').draggable({{containment: 'parent'}})")
+    feynman.run(f"window.makeDraggable($('#{id}'))")
 
 def flush_updates(exit=False):
     when = time.time()

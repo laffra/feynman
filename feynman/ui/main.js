@@ -8,12 +8,11 @@ var drawing = $(".drawing");
 
 function findOrCreate(id, kind) {
     if ($("#" + id).length) return $("#" + id);
-    const node = $("<" + kind + ">")
+    return $("<" + kind + ">")
         .attr("id", id)
         .addClass("feynman-node")
         .addClass("feynman-" + kind)
         .appendTo(drawing);
-    return node;
 }
 
 function update(node, key, value) {
@@ -29,6 +28,38 @@ function update(node, key, value) {
         node[key](value); 
     } catch(e) {
     }
+}
+
+function moveToLastPosition(node) {
+    const key = "pos-" + node.attr("id");
+    const lastPosition = window.localStorage.getItem(key);
+    if (!lastPosition) return;
+    const [left, top, width, height] = lastPosition.split(' ');
+    console.log("move", key, lastPosition)
+    node.css({ left, top, width, height });
+}
+
+window.saveLastPosition = (node) => {
+    const key = "pos-" + node.attr("id");
+    const lastPosition = [
+        node.css("left"),
+        node.css("top"),
+        node.width() + "px",
+        node.height() + "px",
+    ].join(" ")
+    console.log("save", key, lastPosition)
+    window.localStorage.setItem(key, lastPosition);
+}
+
+window.makeDraggable = (node) => {
+    node.draggable({
+        drag: () => saveLastPosition(node),
+        containment: 'parent',
+    }).resizable({
+        resize: () => saveLastPosition(node),
+        handles: "n, e, s, w"
+    });
+    moveToLastPosition(node);
 }
 
 function clearDrawing() {

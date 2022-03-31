@@ -18,6 +18,7 @@
     cursor: grab;
     min-width: 50px;
     min-height: 50px;
+    overflow: hidden;
 }
 
 .db-status {
