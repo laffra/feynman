@@ -1,9 +1,9 @@
-import json
 import sys
-sys.path.extend(["../..", "../../.."]) # this module path is not needed when using pip install
+# this module path is not needed when using pip install
+sys.path.extend([".", "..", "../..", "../../.."])
+
 import feynman;
 from collections import defaultdict
-import re
 
 
 domains = {}
@@ -54,7 +54,8 @@ def thisNameReallyDoesNotMatter(domain):
 feynman.html("explain.html")
 feynman.trace("ping")
 
-print("running example.py with Feynman.Explain...")
-with feynman.Explain():
-    import ping
-    ping.main()
+if __name__ == "__main__":
+    print("running example.py with Feynman.Explain...")
+    with feynman.Explain():
+        import ping
+        ping.main()

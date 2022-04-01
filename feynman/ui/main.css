@@ -38,6 +38,10 @@
     font-size: 20px;
 }
 
+.errors {
+    position: absolute;
+}
+
 error {
     display: block;
     margin: 10px;

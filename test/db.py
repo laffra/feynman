@@ -22,6 +22,9 @@ class Database(object):
         time.sleep(0.000085)
         del self.data[key]
 
+    def size(self):
+        return len(self.data)
+
 
 def log(message):
     print(message)

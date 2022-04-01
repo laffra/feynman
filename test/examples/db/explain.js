@@ -8,8 +8,7 @@ window.dbContainer = $('#databases');
 window.colors = [ "pink", "lightyellow", "lightgreen", "lightblue", "white" ];
 
 window.scaleDatabases = () => {
-    const scale = dbContainer.width() / databases.length / 300;
-    console.log("resize", scale, dbContainer.width(), databases.length)
+    const scale = Math.min(1.0, dbContainer.width() / databases.length / 300);
     $(".database").css("-webkit-transform", () => "scale(" + scale + ")");
 }
 

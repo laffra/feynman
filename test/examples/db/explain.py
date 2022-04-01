@@ -1,8 +1,11 @@
 import sys
-sys.path.extend(["../..", "../../.."]) # this module path is not needed when using pip install
+# this module path is not needed when using pip install
+sys.path.extend([".", "..", "../..", "../../.."])
+
 import feynman
 from collections import defaultdict
 
+print(feynman.__file__)
 feynman.html("explain.html")
 feynman.css("explain.css")
 feynman.run("explain.js")
@@ -52,7 +55,8 @@ def delete(self, key):
 def log(message):
     feynman.update("step", "text", message)
 
-print("running db.py with Feynman.Explain...")
-with feynman.Explain():
-    import db
-    db.main()
+if __name__ == "__main__":
+    print("running db.py with Feynman.Explain...")
+    with feynman.Explain():
+        import db
+        db.main()

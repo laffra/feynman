@@ -16,6 +16,7 @@
     position: absolute;
     border: 2px dotted grey;
     cursor: grab;
+    background-color: white;
     min-width: 50px;
     min-height: 50px;
     overflow: hidden;

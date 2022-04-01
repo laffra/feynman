@@ -131,7 +131,7 @@ function assert(ok, message) {
 
 function error(message) {
     console.log("ERROR", message)
-    $("<error>").text(message).appendTo($("body"));
+    $("<error>").text(message).appendTo($(".errors"));
 }
 
 function handleEvent(event) {
