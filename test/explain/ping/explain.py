@@ -51,6 +51,7 @@ def getLocation(ip):
 def thisNameReallyDoesNotMatter(domain):
     duration[domain] = feynman.return_value
 
+feynman.html("explain.html")
 feynman.trace("ping")
 
 print("running example.py with Feynman.Explain...")

@@ -1,4 +1,4 @@
-// Feynman automatically loads this script at load time. 
+// This is loaded using feynman.js(...) 
 
 // JQuery and JQuery UI are available, but are not mandatory for using Feynman.
 

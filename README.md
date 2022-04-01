@@ -172,9 +172,12 @@ def read(self, key):
 
 ### Declaring custom HTML and JavaScript
 
-When loading the visualization script, Feynman will load three adjacent files, 
-`explain.html`, `explain.css`, and `explain.js`. These three will be merged into
-the drawing at load time.
+Custom html, css, and javascript can be loaded as follows:
+``` python
+feynman.html("explain.html")
+feynman.css("explain.css")
+feynman.run("explain.js")
+```
 
 In our database example, the `explain.js` is interesting as it introduces a
 temperature gauge that animates the state of the database. It shows how

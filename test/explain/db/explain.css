@@ -1,4 +1,4 @@
-/* Feynman automatically loads this CSS at load time. */
+/* This is loaded using feynman.css(...) */
 
 .title {
     position: absolute;

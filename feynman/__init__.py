@@ -75,10 +75,7 @@ def getfile(name):
         frame = frame.f_back
     dirname = os.path.dirname(frame.f_globals["__file__"])
     path = os.path.join(dirname, name)
-    try:
-        return open(path).read()
-    except:
-        return ""
+    return open(path).read()
 
 def group(name, left=0, top=0, width="auto", height="auto", border="none", background="transparent", group="", children=[]):
     id = name
@@ -180,17 +177,11 @@ class Explain(object):
             self.handle_return(frame, arg)
         return self.handle_event
 
-    def import_defaults(self):
-        html("explain.html")
-        css("explain.css")
-        run("explain.js")
-
     def __enter__(self):
         feynman.server.start()
         threading.setprofile(self.handle_event)
         sys.setprofile(self.handle_event)
         self.enabled = True
-        self.import_defaults()
 
     def __exit__(self, type, value, traceback):
         self.enabled = False
