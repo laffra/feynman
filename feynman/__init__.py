@@ -121,7 +121,7 @@ def on(function_name):
     return inner
 
 def trace(moduleOrClass):
-    trace_targets.append(f"{moduleOrClass}.")
+    trace_targets.append(re.compile(f"{moduleOrClass}."))
 
 def get_handlers(target):
     if config_has_regex:
@@ -152,10 +152,10 @@ class Explain(object):
             if handler:
                 handler(*[frame.f_locals[arg] for arg in args])
         if function_name not in trace_targets_shown:
-            for target in trace_targets:
-                if function_name.startswith(target):
+            for pattern in trace_targets:
+                if re.match(pattern, function_name):
                     print(f"@feynman.on(\"{function_name}\")")
-                    print(f"def {function_name[len(target):]}({','.join(args)}):")
+                    print(f"def {re.sub('[<>.]', '_', function_name)}({','.join(args)}):")
                     print(f"   pass")
                     print()
                     trace_targets_shown.add(function_name)
