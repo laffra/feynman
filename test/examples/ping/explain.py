@@ -52,7 +52,7 @@ def thisNameReallyDoesNotMatter(domain):
     duration[domain] = feynman.return_value
 
 feynman.html("explain.html")
-feynman.trace("ping")
+feynman.trace(r"ping\.get.*")
 
 if __name__ == "__main__":
     print("running example.py with Feynman.Explain...")
